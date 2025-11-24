@@ -6,9 +6,11 @@ export default defineConfig({
   define: {
     'process.env': {}
   },
-  base: '/',
+  // 重要：对于 Netlify 部署，使用根路径
+  base: './',
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    assetsDir: 'assets'
   },
   server: {
     host: true,
