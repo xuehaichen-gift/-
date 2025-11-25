@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import './src/index.css';  // 如果文件在 src 文件夹内
+import './index.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
