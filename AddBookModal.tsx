@@ -16,8 +16,9 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onA
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<SearchResultBook[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [lastAddedBook, setLastAddedBook] = useState<string>('');
 
-  // 添加防抖搜索效果
+  // 防抖搜索
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
@@ -37,34 +38,49 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onA
       } finally {
         setIsLoading(false);
       }
-    }, 500); // 延迟500毫秒搜索，避免频繁请求
+    }, 500);
 
     return () => clearTimeout(searchTimer);
   }, [query]);
 
+  // 重置状态当弹窗关闭时
+  useEffect(() => {
+    if (!isOpen) {
+      setQuery('');
+      setResults([]);
+      setHasSearched(false);
+      setLastAddedBook('');
+    }
+  }, [isOpen]);
+
   const handleSelectBook = (result: SearchResultBook) => {
-  const newBook: Book = {
-    id: crypto.randomUUID(), // 确保每次生成新的ID
-    title: result.title,
-    author: result.author,
-    coverUrl: result.coverUrl || `https://picsum.photos/seed/${encodeURIComponent(result.title)}/300/400`,
-    category: result.category || Category.OTHER,
-    status: 'planned',
-    tags: [],
-    intro: result.intro,
-    addedAt: Date.now(),
-    coreViews: '',
-    excerpts: [],
-    thoughts: ''
+    // 生成唯一ID - 使用时间戳+随机数确保唯一性
+    const uniqueId = `book-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    const newBook: Book = {
+      id: uniqueId,
+      title: result.title,
+      author: result.author,
+      coverUrl: result.coverUrl,
+      category: result.category || Category.OTHER,
+      status: 'planned',
+      tags: [],
+      intro: result.intro || `《${result.title}》是${result.author}的作品。`,
+      addedAt: Date.now(),
+      coreViews: '',
+      excerpts: [],
+      thoughts: ''
+    };
+    
+    // 防止重复添加
+    if (lastAddedBook !== `${result.title}-${result.author}`) {
+      onAddBook(newBook);
+      setLastAddedBook(`${result.title}-${result.author}`);
+    }
+    
+    // 关闭弹窗
+    onClose();
   };
-  
-  onAddBook(newBook);
-  // 重置状态并关闭弹窗
-  setQuery('');
-  setResults([]);
-  setHasSearched(false);
-  onClose();
-};
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="新增书籍">
@@ -97,16 +113,16 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onA
             <div className="grid grid-cols-1 gap-4">
               {results.map((book, idx) => (
                 <div 
-                  key={idx} 
+                  key={`${book.title}-${book.author}-${idx}`}
                   className="flex gap-4 p-3 border rounded-lg hover:bg-gray-50 hover:border-douban-green cursor-pointer transition-all group"
                   onClick={() => handleSelectBook(book)}
                 >
                   <img 
-                    src={book.coverUrl || `https://picsum.photos/seed/${encodeURIComponent(book.title)}/100/140`} 
+                    src={book.coverUrl} 
                     alt={book.title} 
                     className="w-16 h-24 object-cover rounded shadow-sm bg-gray-200"
                     onError={(e) => {
-                      // 如果图片加载失败，使用备用图片
+                      // 图片加载失败时使用备用图片
                       e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(book.title)}/100/140`;
                     }}
                   />
