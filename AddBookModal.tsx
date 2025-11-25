@@ -43,27 +43,28 @@ export const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onA
   }, [query]);
 
   const handleSelectBook = (result: SearchResultBook) => {
-    const newBook: Book = {
-      id: crypto.randomUUID(),
-      title: result.title,
-      author: result.author,
-      coverUrl: result.coverUrl || `https://picsum.photos/seed/${encodeURIComponent(result.title)}/300/400`,
-      category: result.category || Category.OTHER,
-      status: 'planned',
-      tags: [],
-      intro: result.intro,
-      addedAt: Date.now(),
-      coreViews: '',
-      excerpts: [],
-      thoughts: ''
-    };
-    onAddBook(newBook);
-    // 重置状态
-    setQuery('');
-    setResults([]);
-    setHasSearched(false);
-    onClose(); // 添加完成后关闭弹窗
+  const newBook: Book = {
+    id: crypto.randomUUID(), // 确保每次生成新的ID
+    title: result.title,
+    author: result.author,
+    coverUrl: result.coverUrl || `https://picsum.photos/seed/${encodeURIComponent(result.title)}/300/400`,
+    category: result.category || Category.OTHER,
+    status: 'planned',
+    tags: [],
+    intro: result.intro,
+    addedAt: Date.now(),
+    coreViews: '',
+    excerpts: [],
+    thoughts: ''
   };
+  
+  onAddBook(newBook);
+  // 重置状态并关闭弹窗
+  setQuery('');
+  setResults([]);
+  setHasSearched(false);
+  onClose();
+};
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="新增书籍">
